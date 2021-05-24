@@ -207,7 +207,7 @@
                      });
                   });
 
-                  $.post("/controles", controles).done(
+                  $.post("/controles", {"controles" = controles}).done(
                      function(data) {
                      // Some sort of feedback that it worked.
                   }).fail(
