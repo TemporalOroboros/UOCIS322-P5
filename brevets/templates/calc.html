@@ -69,10 +69,10 @@
             </div>
          <div class="row">
             <div class="col-md-1">
-               <button name="submit" id="submit">Submit</button>
+               <button type="button" name="insert" id="insert">Submit</button>
             </div>
             <div class="col-md-2">
-               <button name="display" id="display">Display</button>
+               <button type="button" name="display" id="display">Display</button>
             </div>
          </div>
             <!-- row -->
@@ -146,7 +146,8 @@
 
             $(document).ready(function(){
                // Do the following when the page is finished loading
-               $('form').submit(function(event) {
+               $('form,input').submit(function(event) {
+                  console.log('Attempting to submit form');
                   event.preventDefault();
                });
 
@@ -189,7 +190,7 @@
                });
 
                // Submit control times to the database.
-               $('button[name="submit"]').click(function() {
+               $('button[name="insert"]').click(function() {
                   console.log("Attempting to submit controles to database");
 
                   var controles = [];
@@ -199,21 +200,23 @@
                      var name = controle.find('input[name="location"]').val();
                      var open_time = controle.find('input[name="open"]').val();
                      var close_time = controle.find('input[name="close"]').val();
+                     if((open_time === "") && (close_time === "")){
+                        return;
+                     }
                      controles.push({
                         'km': km,
                         'name': name,
-                        'open_time': open_time,
-                        'close_time': close_time
+                        'open': open_time,
+                        'close': close_time
                      });
                   });
-
-                  $.post("/controles", {"controles" = controles}).done(
+                  
+                  console.log(`Posting: ${JSON.stringify(controles)}`)
+                  $.post("/controles", {'controles': JSON.stringify(controles)}).done(
                      function(data) {
                      // Some sort of feedback that it worked.
-                  }).fail(
-                     function(err) {
+                  }).fail(function(err) {
                      console.log(err);
-                     // Some sort of feedback that it didn't work.
                   });
                });
 

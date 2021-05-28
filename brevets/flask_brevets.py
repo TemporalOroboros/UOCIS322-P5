@@ -8,6 +8,7 @@ import os
 import arrow # Replacement for datetime, based on moment.js
 import logging
 import flask
+import json
 from flask import Flask, redirect, url_for, request, render_template
 from flask_restful import Resource, Api
 from pymongo import MongoClient
@@ -42,7 +43,7 @@ def index():
 # Display page (displays all brevet controle times in the database)
 @app.route("/display")
 def display():
-    app.logger.debug("")
+    app.logger.debug("Display page entry")
 
     db_dump = controles.find(projection={"_id": 0})
     return flask.render_template('display.html', controles = db_dump)
@@ -106,12 +107,20 @@ def get_times_strings(controle_dist_km, brevet_dist_km, brevet_start_time):
 
 @app.route("/controles", methods=["POST"])
 def add_controles_to_db():
-    app.logger.debug("Got a POST request to database")
-    insert = request.args.get('controles', None, type=list)
-    if (insert is None) or (len(insert) == 0):
+    app.logger.debug("Got a POST request to database:")
+    controles_string = request.form.get('controles', None, type=str)
+    if controles_string is None:
         return "", 501
-    result = controles.insert_many(insert).inserted_ids
-    return flask.jsonify(result = result), 200
+
+    controles_list = json.loads(controles_string)
+    if len(controles_list) == 0:
+        return flask.jsonify(result = []), 200
+
+    insert_result = controles.insert_many(controles_list)
+    if not insert_result.acknowledged:
+        return "", 500
+
+    return "", 200
 
 class Controles(Resource):
     def get(self, uid):
